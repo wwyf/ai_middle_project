@@ -38,6 +38,9 @@ from pyml.model_selection import KFold
 from pyml.model_selection import ShuffleSplit
 from pyml.preprocessing import StandardScaler
 
+from sklearn.svm import LinearSVR
+from sklearn.neural_network import MLPRegressor
+
 # # 读取数据文件
 
 train = pd.read_excel('../data/train.xlsx')
@@ -71,6 +74,9 @@ def get_proportion_feature(df):
 
 # # 构造训练集和测试集，并归一化
 
+train_X_feat = train_ori_X
+test_X_feat = test_ori_X
+
 train_X_feat = get_proportion_feature(train_ori_X)
 test_X_feat = get_proportion_feature(test_ori_X)
 
@@ -87,8 +93,11 @@ train_Y = train_ori_Y.values
 n_splits = 3
 cv = ShuffleSplit(n_splits=n_splits)
 for train_indices, test_indices in cv.split(train_X):
-    lr = LinearRegression(learning_rate=0.01, num_iterations=10000)
-    lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
+#     lr = LinearRegression(learning_rate=0.01, num_iterations=3000)
+# just for test
+#     lr = LinearSVR()
+#     lr = MLPRegressor(hidden_layer_sizes=50)
+    lr.fit(train_X[train_indices], train_Y[train_indices])
     y_pred = lr.predict(train_X[test_indices])
     print(pearson_correlation(y_pred, train_Y[test_indices]))
 

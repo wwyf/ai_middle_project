@@ -1,0 +1,3 @@
+10.5
+1 : LinearRegression(0.01,3000) 增加占比特征
+2 ：LinearRegression(0.01,3000) 不增加特征
