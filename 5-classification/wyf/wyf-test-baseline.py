@@ -42,6 +42,7 @@ from pyml.model_selection import ShuffleSplit
 from pyml.preprocessing import StandardScaler
 
 from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
 # # 读取数据
 # 1. 读取训练数据和测试数据为字符串的列表
@@ -103,7 +104,8 @@ train_X.shape,train_Y.shape
 n_splits = 2
 ms = ShuffleSplit(n_splits=n_splits)
 for train_indices, test_indices in ms.split(train_X):
-    clf = MLPClassifier()
+#     clf = MLPClassifier()
+    clf = GradientBoostingClassifier()
     clf.fit(train_X[train_indices], train_Y[train_indices])
     y_pred = clf.predict(train_X[test_indices])
     score = precision_score(train_Y[test_indices], y_pred)
