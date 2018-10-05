@@ -1,0 +1,9 @@
+提交记录
+
+2018.10.5
+1. doc2vec(vector_size=100)+knn(k=13)
+2. doc2vec(vector_size=100)+knn(k=14)
+3. doc2vec(vector_size=100)+knn(k=15)
+4. doc2vec(vector_size=100)+knn(k=18)
+5. doc2vec(vector_size=100)+knn(k=19)
+6. doc2vec(vector_size=100)+knn(k=20)

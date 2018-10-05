@@ -32,8 +32,10 @@
 # ---
 
 import sys
-sys.path.append(r'/home/wyf/0code')
 # sys.path.append(r'E:/0code')
+sys.path.append(r'/home/wyf/0code')
+# sys.path.append(r'/home/wangyf226/0code')
+# sys.path.append(r'/BIGDATA1/nsccgz_yfdu_1/asc19/wyf/pyml')
 
 import pyml
 import pandas as pd

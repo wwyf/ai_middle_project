@@ -1,0 +1,10 @@
+记录一下提交的情况
+10.5
+1 ：忘了
+2 ：忘了
+3 ：doc2vec(vector_size=50)+lr(learning_rate = 0.1, num_iteration = 50000)
+4 : doc2vec(vector_size=50)+knn(k=12)
+5 : doc2vec(vector_size=50)+knn(k=15)
+6 : doc2vec(vector_size=50)+knn(k=17)
+7 : doc2vec(vector_size=50)+knn(k=19)
+8 : doc2vec(vector_size=50)+knn(k=20)
