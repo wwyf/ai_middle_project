@@ -1,16 +1,20 @@
 import sys
 # sys.path.append(r'E:/0code')
-#sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
-#sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
+sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
+sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
 
-sys.path.append('/home/wyf/0code/AI-Middle-Project/')
-sys.path.append('/home/wyf/0code/mylearn')
+#sys.path.append('/home/wyf/0code/AI-Middle-Project/')
+#sys.path.append('/home/wyf/0code/mylearn')
 import numpy as np
 import smart_open
 import gensim
 from logger import get_logger
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler
+
+RequiredStandardize = True
+
 
 mylogger = get_logger(__name__)
 mylogger.debug('hello world')
@@ -83,8 +87,20 @@ train_X, train_Y, test_X = load_dataset()
 print(train_X, train_Y, test_X)
 mylogger.info('get X and Y and testX. of shape %s and %s and %s', train_X.shape, train_Y.shape, test_X.shape)
 
-# start training NN
-clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
-# clf.fit(train_X, train_Y)
-scores = cross_val_score(clf, train_X, train_Y, cv=20)
-mylogger.info('scoures are %s', scores)
+mylogger.info("standardize the x's")
+RequiredStandardize = False
+if RequiredStandardize:
+    scalar = StandardScaler()
+    scalar.fit(train_X)
+    train_X = scalar.transform(train_X)
+    test_X = scalar.transform(test_X)
+
+mylogger.info("standardize finished.")
+
+for size in range(1, 51, 2):
+    # start training NN
+    clf = MLPClassifier(alpha=1e-4, hidden_layer_sizes=(size), random_state=1)
+    # clf.fit(train_X, train_Y)
+    scores = cross_val_score(clf, train_X, train_Y, cv=20)
+    score = np.mean(scores)
+    mylogger.info('size %s score is %s', size, score)
