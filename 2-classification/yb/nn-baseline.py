@@ -1,8 +1,10 @@
 import sys
 # sys.path.append(r'E:/0code')
-sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
-sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
+#sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
+#sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
 
+sys.path.append('/home/wyf/0code/AI-Middle-Project/')
+sys.path.append('/home/wyf/0code/mylearn')
 import numpy as np
 import smart_open
 import gensim
@@ -33,6 +35,7 @@ def load_dataset():
         mylogger.info('exist saved file. load.')
         trainX = np.load('trainX.npy')
         trainY = np.load('trainY.npy')
+        return trainX, trainY
     # train_ori_X = read_train_text_to_list('../data/trainData.txt')
     train_ori_Y = read_train_text_to_list('../data/trainLabel.txt')
     train_ori_Y = np.array([int(y) for y in train_ori_Y])
@@ -72,4 +75,5 @@ def load_dataset():
     np.save('trainY', train_Y)
     return train_X, train_Y
     
-load_dataset()
+train_X, train_Y = load_dataset()
+print(train_X, train_Y)
