@@ -1,14 +1,16 @@
 import sys
 # sys.path.append(r'E:/0code')
-#sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
-#sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
+sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
+sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
 
-sys.path.append('/home/wyf/0code/AI-Middle-Project/')
-sys.path.append('/home/wyf/0code/mylearn')
+# sys.path.append('/home/wyf/0code/AI-Middle-Project/')
+# sys.path.append('/home/wyf/0code/mylearn')
 import numpy as np
 import smart_open
 import gensim
 from logger import get_logger
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import cross_val_score
 
 mylogger = get_logger(__name__)
 mylogger.debug('hello world')
@@ -31,11 +33,12 @@ def read_raw_documents(fname, tokens_only=False):
 
 def load_dataset():
     ds = np.DataSource()
-    if ds.exists('trainX.npy') and ds.exists('trainY.npy'):
+    if ds.exists('trainX.npy') and ds.exists('trainY.npy') and ds.exists('testX.npy'):
         mylogger.info('exist saved file. load.')
         trainX = np.load('trainX.npy')
         trainY = np.load('trainY.npy')
-        return trainX, trainY
+        testX = np.load('testX.npy')
+        return trainX, trainY, testX
     # train_ori_X = read_train_text_to_list('../data/trainData.txt')
     train_ori_Y = read_train_text_to_list('../data/trainLabel.txt')
     train_ori_Y = np.array([int(y) for y in train_ori_Y])
@@ -73,7 +76,15 @@ def load_dataset():
     train_X.shape
     np.save('trainX', train_X)
     np.save('trainY', train_Y)
-    return train_X, train_Y
+    np.save('testX', test_X)
+    return train_X, train_Y, test_X
     
-train_X, train_Y = load_dataset()
-print(train_X, train_Y)
+train_X, train_Y, test_X = load_dataset()
+print(train_X, train_Y, test_X)
+mylogger.info('get X and Y and testX. of shape %s and %s and %s', train_X.shape, train_Y.shape, test_X.shape)
+
+# start training NN
+clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+# clf.fit(train_X, train_Y)
+scores = cross_val_score(clf, train_X, train_Y, cv=20)
+mylogger.info('scoures are %s', scores)
