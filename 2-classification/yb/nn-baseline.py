@@ -1,10 +1,10 @@
 import sys
 # sys.path.append(r'E:/0code')
-sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
-sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
+#sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
+#sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
 
-# sys.path.append('/home/wyf/0code/AI-Middle-Project/')
-# sys.path.append('/home/wyf/0code/mylearn')
+sys.path.append('/home/wyf/0code/AI-Middle-Project/')
+sys.path.append('/home/wyf/0code/mylearn')
 import numpy as np
 import smart_open
 import gensim
@@ -78,7 +78,7 @@ def load_dataset():
     np.save('trainY', train_Y)
     np.save('testX', test_X)
     return train_X, train_Y, test_X
-    
+
 train_X, train_Y, test_X = load_dataset()
 print(train_X, train_Y, test_X)
 mylogger.info('get X and Y and testX. of shape %s and %s and %s', train_X.shape, train_Y.shape, test_X.shape)
