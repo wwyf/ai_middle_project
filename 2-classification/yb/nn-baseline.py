@@ -1,10 +1,10 @@
 import sys
 # sys.path.append(r'E:/0code')
-sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
-sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
+#sys.path.append('/Users/yanbin/Documents/Projects/AI-Middle-Project/')
+#sys.path.append('/Users/yanbin/Documents/Projects/mylearn')
 
-#sys.path.append('/home/wyf/0code/AI-Middle-Project/')
-#sys.path.append('/home/wyf/0code/mylearn')
+sys.path.append('/home/wyf/0code/AI-Middle-Project/')
+sys.path.append('/home/wyf/0code/mylearn')
 import numpy as np
 import smart_open
 import gensim
