@@ -99,7 +99,13 @@ if RequiredStandardize:
 
 mylogger.info("standardize finished.")
 
-mlpc = MLPClassifier(verbose=True, hidden_layer_sizes=(3, 4, ))
-mlpc.fit(train_X.iloc[:5, :5], train_Y.iloc[:5, :5])
-p = mlpc.score(train_X.iloc[0:1, :5], train_Y.iloc[0:1, :5])
-#mylogger.log('result is %s', p)
+X = pd.DataFrame([
+    [2, -4, 6, -8, 10, -2, 4, -6, 8, -10]
+])
+Y = pd.DataFrame([
+    1, 0, 1, 0, 1, 0, 1, 0,1, 0
+])
+mlpc = MLPClassifier(verbose=True, hidden_layer_sizes=(3, ), max_iter=100, learning_rate_init=0.1, warm_start=True)
+mlpc.fit(X, Y)
+# mlpc.fit(train_X.iloc[:5, :5], train_Y.iloc[:5, :5])
+# p = mlpc.score(train_X.iloc[0:1, :5], train_Y.iloc[0:1, :5])
