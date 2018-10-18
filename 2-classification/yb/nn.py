@@ -99,13 +99,34 @@ if RequiredStandardize:
 
 mylogger.info("standardize finished.")
 
-X = pd.DataFrame([
-    [2, -4, 6, -8, 10, -2, 4, -6, 8, -10]
-])
-Y = pd.DataFrame([
-    1, 0, 1, 0, 1, 0, 1, 0,1, 0
-])
-mlpc = MLPClassifier(verbose=True, hidden_layer_sizes=(3, ), max_iter=100, learning_rate_init=0.1, warm_start=True)
-mlpc.fit(X, Y)
-# mlpc.fit(train_X.iloc[:5, :5], train_Y.iloc[:5, :5])
-# p = mlpc.score(train_X.iloc[0:1, :5], train_Y.iloc[0:1, :5])
+# one
+# X = np.random.random((2,600)) * 4 - 2
+# Ya = X[0, :] * X[0, :]
+# Yb = X[1, :] * X[1, :]
+# Y = (Ya + Yb ) < 2.5
+# Y = pd.DataFrame(Y.reshape((-1, 1)))
+# X = pd.DataFrame(X)
+
+# two
+# X = pd.DataFrame([
+#     [1, 2, 3, 4, -1, -2, -3, -4]
+# ])
+# Y = pd.DataFrame([
+#     1, 1, 1, 1, 0, 0, 0, 0
+# ])
+train_X = train_X.transpose()
+tr_X = train_X.iloc[:, :21600]
+tr_Y = train_Y.iloc[:21600, :]
+ts_X = train_X.iloc[:, 21600:]
+ts_Y = train_Y.iloc[:21600, :]
+print(tr_X.shape, tr_Y.shape, ts_X.shape, ts_Y.shape)
+mlpc = MLPClassifier(verbose=False, 
+    hidden_layer_sizes=(8, ), 
+    max_iter=100, 
+    learning_rate_init=1, 
+    warm_start=True, 
+    mini_batch='auto', 
+    step_size=5, 
+    load_from_file=True)
+mlpc.fit(tr_X, tr_Y)
+r = mlpc.predict(ts_X)
