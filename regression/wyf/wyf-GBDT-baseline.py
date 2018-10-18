@@ -30,7 +30,7 @@ sys.path.append(r'/home/wyf/0code')
 import pandas as pd
 import numpy as np
 import datetime
-from pyml.emsemble.regression import GradientBoostingRegression
+from pyml.ensemble.regression import GradientBoostingRegression
 from pyml.feature_extraction.text import CountVectorizer
 from pyml.linear_model.regression import LinearRegression
 from pyml.neighbors.classification import KNeighborsClassifier
@@ -38,6 +38,8 @@ from pyml.metrics.regression import pearson_correlation
 from pyml.model_selection import KFold
 from pyml.model_selection import ShuffleSplit
 from pyml.preprocessing import StandardScaler
+from pyml.logger import logger
+import logging
 
 # # 读取数据文件
 
@@ -52,7 +54,7 @@ test_ori_X = test.drop('Tags', axis=1)
 
 # # 特征工程
 
-def get_proportion_feature(df):
+def get_proportion_feature_1(df):
     """
     构造以下三个特征
     积极评论占总评论的比例
@@ -72,34 +74,68 @@ def get_proportion_feature(df):
 
 # # 构造训练集和测试集，并归一化
 
-train_X_feat = get_proportion_feature(train_ori_X)
-test_X_feat = get_proportion_feature(test_ori_X)
+# 特征方案0：不设置任何特征
+train_X_feat = train_ori_X
+test_X_feat = test_ori_X
+
+# 特征方案1：增加占比特征，不抛弃原有特征
+train_X_feat = get_proportion_feature_1(train_ori_X)
+test_X_feat = get_proportion_feature_1(test_ori_X)
 
 train_X_feat.columns
 
+# 方案一：没有权重
 ss = StandardScaler()
 train_X = ss.fit_transform(train_X_feat.values)
 test_X = ss.transform(test_X_feat.values)
+
+# 方案二：设置部分列的权重
+ss = StandardScaler()
+train_X = ss.fit_transform(train_X_feat.values)
+test_X = ss.transform(test_X_feat.values)
+# 增加某些特征的权重
+train_X[:,1] *= 2
+train_X[:,4] *= 2
+train_X[:,4] *= 2
 
 train_Y = train_ori_Y.values
 
 # # 交叉验证
 
-n_splits = 3
+logger.setLevel(logging.INFO)
+logger.info('test')
+
+# n_splits = 2
+logger.setLevel(logging.INFO)
 cv = ShuffleSplit(n_splits=n_splits)
 for train_indices, test_indices in cv.split(train_X):
-    lr = GradientBoostingRegression(learning_rate=0.1, n_estimators=100, max_tree_node_size=400)
+    lr = GradientBoostingRegression(learning_rate=0.2, n_estimators=50, max_tree_node_size=500)
     lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
     y_pred = lr.predict(train_X[test_indices])
-    print(pearson_correlation(y_pred, train_Y[test_indices]))
+    logger.info(pearson_correlation(y_pred, train_Y[test_indices]))
 
 # # 训练模型写入结果
 
-lr = GradientBoostingRegression(learning_rate=0.1, n_estimators=100, max_tree_node_size=400)
+lr = GradientBoostingRegression(learning_rate=0.2, n_estimators=50, max_tree_node_size=500)
 lr.fit(train_X, train_Y, watch=True)
 
 y_pred = lr.predict(test_X)
 sub = pd.DataFrame(y_pred)
-sub.to_csv('../results/'+'GBDT-0.1-100-'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
+sub.to_csv('./results/'+'GBDT-0.2-50-'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
+
+## 一些记录
+训练5颗树的时候，验证集大概在0.625-0.640左右
+训练10颗树的时候，验证集大概在0.633-0.642左右
+
+# ## 2018.10.17 第二次rank
+# 4:GBDT-0.2-50-2018-10-17-13-34
+#     1. GBDT
+#     2. 特征：无
+#     3. 超参数：
+#         1. learning_rate=0.2
+#         1. n_estimators=50
+#         1. max_tree_node_size=500
+#     4. 验证集 0.63
+#     5. 测试集 53.9545
 
 
