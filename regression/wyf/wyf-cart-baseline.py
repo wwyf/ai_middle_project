@@ -30,7 +30,7 @@ sys.path.append(r'/home/wyf/0code')
 import pandas as pd
 import numpy as np
 import datetime
-from pyml.ensemble.regression import GradientBoostingRegression
+from pyml.tree.regression import DecisionTreeRegressor
 from pyml.feature_extraction.text import CountVectorizer
 from pyml.linear_model.regression import LinearRegression
 from pyml.neighbors.classification import KNeighborsClassifier
@@ -38,8 +38,6 @@ from pyml.metrics.regression import pearson_correlation
 from pyml.model_selection import KFold
 from pyml.model_selection import ShuffleSplit
 from pyml.preprocessing import StandardScaler
-from pyml.logger import logger
-import logging
 
 # # 读取数据文件
 
@@ -84,6 +82,14 @@ test_X_feat = get_proportion_feature_1(test_ori_X)
 
 train_X_feat.columns
 
+# 查看不同特征与分数的相关系数
+for feat_name in train_X_feat:
+    print("{} : {}".format(feat_name, pearson_correlation(train_X_feat[feat_name].values, train_ori_Y.values)))
+
+# +
+# 归一化，可选择不同方案
+# -
+
 # 方案一：没有权重
 ss = StandardScaler()
 train_X = ss.fit_transform(train_X_feat.values)
@@ -102,38 +108,74 @@ train_Y = train_ori_Y.values
 
 # # 交叉验证
 
-logger.setLevel(logging.INFO)
-logger.info('test')
-
-# n_splits = 2
-logger.setLevel(logging.INFO)
+n_splits = 2
 cv = ShuffleSplit(n_splits=n_splits)
 for train_indices, test_indices in cv.split(train_X):
-    lr = GradientBoostingRegression(learning_rate=0.2, n_estimators=50, max_tree_node_size=500)
-    lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
+#     lr = GradientBoostingRegression(learning_rate=0.1, n_estimators=100, max_tree_node_size=400)
+    lr = DecisionTreeRegressor(max_node_size=500)
+#     lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
+    lr.fit(train_X[train_indices], train_Y[train_indices])
     y_pred = lr.predict(train_X[test_indices])
-    logger.info(pearson_correlation(y_pred, train_Y[test_indices]))
+    print(pearson_correlation(y_pred, train_Y[test_indices]))
 
 # # 训练模型写入结果
 
-lr = GradientBoostingRegression(learning_rate=0.2, n_estimators=50, max_tree_node_size=500)
-lr.fit(train_X, train_Y, watch=True)
+lr = DecisionTreeRegressor(max_node_size=500)
+lr.fit(train_X, train_Y)
 
 y_pred = lr.predict(test_X)
 sub = pd.DataFrame(y_pred)
-sub.to_csv('./results/'+'GBDT-0.2-50-'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
+sub.to_csv('./results/'+'CART-m500-weight1-no_feat'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
 
-## 一些记录
-训练5颗树的时候，验证集大概在0.625-0.640左右
-训练10颗树的时候，验证集大概在0.633-0.642左右
 
-## 2018.10.17 第二次rank
-4:GBDT-0.2-50-2018-10-17-13-34
-    1. GBDT
-    2. 特征：无
-    3. 超参数：
-        1. learning_rate=0.2
-        1. n_estimators=50
-        1. max_tree_node_size=500
-    4. 验证集 0.63
-    5. 测试集
+
+
+
+# # 记录提交结果
+# ## 2018.10.17 第一次rank
+# 1： CART-m500-2018-10-17-10-34.csv : 
+#     1. 模型：CART二叉回归树
+#     2. 特征：增加特征1，并抛弃评论词汇数量
+#     2. 超参数：max_node_size=500,没有设置连续值特征搜索上限 ：
+#     3. 验证集 0.62左右
+#     4. 测试集 0.625 左右
+#     
+# ## 2018.10.17 第二次rank
+# 0： CART-m1000-2018-10-17-10-55 : 
+#     1. CART二叉回归树
+#     2. 特征：增加特征1，并抛弃评论词汇数量
+#     3. 超参数：max_node_size=1000,没有设置连续值特征搜索上限 ：
+#     3. 验证集 0.605 左右
+#     4. 测试集 TODO
+# 1: CART-m500-weight12018-10-17-11-23.csv
+#     1. CART二叉回归树
+#     2. 特征：增加特征1，保留原有特征
+#     3. 超参数：
+#         1. max_node_size=500,没有设置连续值特征搜索上限
+#         2. 特征权重：
+#             1. average_score,
+#             2. Review_Total_Positive_Word_Counts
+#             3. Review_Total_Positive_Word_Counts_radio_Total_Number_of_Reviews 在归一化后乘2
+#     4. 验证集：0.627-0.645
+#     5. 测试集：TODO
+# 2：CART-m500-weight1-no_feat2018-10-17-11-27.csv
+#     1. CART二叉回归树
+#     2. 特征：不修改原有特征
+#     3. 超参数：
+#         1. max_node_size=500,没有设置连续值特征搜索上限
+#         2. 特征权重：
+#             1. average_score,
+#             2. Review_Total_Positive_Word_Counts
+#             3. Review_Total_Positive_Word_Counts_radio_Total_Number_of_Reviews 在归一化后乘2
+#     4. 验证集：0.632-0.640
+#     5. 测试集：TODO
+# 3：CART-m500-no_weight-no_feat2018-10-17-11-33.csv
+#     1. CART二叉回归树
+#     2. 特征：不修改原有特征
+#     3. 超参数：
+#         1. max_node_size=500,没有设置连续值特征搜索上限
+#         2. 特征权重：无
+#     4. 验证集：0.623-0.632
+#     5. 测试集：TODO
+
+
