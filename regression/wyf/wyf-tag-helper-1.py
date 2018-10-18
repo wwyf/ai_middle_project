@@ -42,6 +42,12 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk import pos_tag
 from nltk.corpus import stopwords
 
+# # 这一份文件的作用
+#
+# 这一份文件就是为了能够更好的提取tags的特征而弄的。
+#
+# 目前已经能够将tags数据，拆分成6个维度的数据，存在另一个excel表中
+
 # # 读取数据文件
 
 train = pd.read_excel('../data/train.xlsx')
@@ -49,29 +55,12 @@ test = pd.read_excel('../data/testStudent.xlsx')
 
 train.dtypes # 检查有没有数据类型错误的，比如原本是int的变成str，说明里面可能有nan值等奇怪的数据
 
-train_ori_X = train.drop('Reviewer_Score', axis=1)
+# train_ori_X = train.drop('Reviewer_Score', axis=1)
+train_ori_X = train
 train_ori_Y = train['Reviewer_Score']
 test_ori_X = test
 
 # # 特征工程
-
-def get_proportion_feature(df):
-    """
-    构造以下三个特征
-    积极评论占总评论的比例
-    消极评论占总评论的比例
-    评论员评论占总评论的比例
-    """
-    df = df.copy()
-    
-    base_features = ['Total_Number_of_Reviews']
-    gap_features = ['Review_Total_Negative_Word_Counts', 'Review_Total_Positive_Word_Counts','Total_Number_of_Reviews_Reviewer_Has_Given']
-    for base_feature in base_features:
-        for gap_feature in gap_features:
-            df[gap_feature+'_radio_'+base_feature] = df[gap_feature]/df[base_feature]
-            # 数字太小了，乘上一个10
-#             df = df.drop(gap_feature, axis=1)
-    return df
 
 train_tags = train['Tags']
 
@@ -258,6 +247,12 @@ def get_no_used_tags(ss):
     if len(no_used_features) > 1:
         print(no_used_features)
     return no_used_features
+def get_room_type_tags(ss):
+    tags = tags_tokenize(ss)
+    for s in tags:
+        if s not in trip_words and s not in traveler_words and s not in order_types and s not in night_types and s not in pet_lists:
+            return s
+    return -1
 
 # 增加无用特征
 def get_no_used_tag_feature(df):
@@ -266,6 +261,13 @@ def get_no_used_tag_feature(df):
     """
     df = df.copy()
     df['no_used'] = df.apply(lambda s : get_no_used_tags(s['Tags']), axis=1)
+    return df
+def get_room_type_feature(df):
+    """
+    判断数据集中的订单提交类型
+    """
+    df = df.copy()
+    df['room_type'] = df.apply(lambda s : get_room_type_tags(s['Tags']), axis=1)
     return df
 
 # 增加旅游类型一列，如果没有就设置为-1
@@ -284,12 +286,18 @@ test_X_feat = get_night_type_feature(test_X_feat)
 train_X_feat = get_pet_feature(train_X_feat)
 test_X_feat = get_pet_feature(test_X_feat)
 
-train_X_feat = get_no_used_tag_feature(train_X_feat)
-test_X_feat = get_no_used_tag_feature(test_X_feat)
+# +
+# train_X_feat = get_no_used_tag_feature(train_X_feat)
+# test_X_feat = get_no_used_tag_feature(test_X_feat)
+# -
 
-train_X_feat.to_excel('train_add_feat.xlsx', index_label=None)
-test_X_feat.to_excel('test_add_feat.xlsx', index_label=None)
+train_X_feat = get_room_type_feature(train_X_feat)
+test_X_feat = get_room_type_feature(test_X_feat)
 
 train_X_feat.head()
 
+train_X_feat.drop(labels='Tags', axis=1)
+test_X_feat.drop(labels='Tags', axis=1)
 
+train_X_feat.to_excel('../data/train_add_feat.xlsx', index_label=None, index=0)
+test_X_feat.to_excel('../data/test_add_feat.xlsx', index_label=None, index=0)
