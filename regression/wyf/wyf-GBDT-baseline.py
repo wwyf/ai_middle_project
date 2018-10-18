@@ -127,13 +127,15 @@ sub.to_csv('./results/'+'GBDT-0.2-50-'+ str(datetime.datetime.now().strftime("%Y
 训练5颗树的时候，验证集大概在0.625-0.640左右
 训练10颗树的时候，验证集大概在0.633-0.642左右
 
-## 2018.10.17 第二次rank
-4:GBDT-0.2-50-2018-10-17-13-34
-    1. GBDT
-    2. 特征：无
-    3. 超参数：
-        1. learning_rate=0.2
-        1. n_estimators=50
-        1. max_tree_node_size=500
-    4. 验证集 0.63
-    5. 测试集
+# ## 2018.10.17 第二次rank
+# 4:GBDT-0.2-50-2018-10-17-13-34
+#     1. GBDT
+#     2. 特征：无
+#     3. 超参数：
+#         1. learning_rate=0.2
+#         1. n_estimators=50
+#         1. max_tree_node_size=500
+#     4. 验证集 0.63
+#     5. 测试集 53.9545
+
+
