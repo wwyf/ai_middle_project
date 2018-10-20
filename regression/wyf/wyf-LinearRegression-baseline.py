@@ -37,6 +37,7 @@ from pyml.metrics.regression import pearson_correlation
 from pyml.model_selection import KFold
 from pyml.model_selection import ShuffleSplit
 from pyml.preprocessing import StandardScaler
+import seaborn as sns
 
 from sklearn.svm import LinearSVR
 from sklearn.neural_network import MLPRegressor
@@ -93,11 +94,12 @@ train_Y = train_ori_Y.values
 n_splits = 3
 cv = ShuffleSplit(n_splits=n_splits)
 for train_indices, test_indices in cv.split(train_X):
-#     lr = LinearRegression(learning_rate=0.01, num_iterations=3000)
+    lr = LinearRegression(learning_rate=0.01, num_iterations=3000)
 # just for test
 #     lr = LinearSVR()
 #     lr = MLPRegressor(hidden_layer_sizes=50)
-    lr.fit(train_X[train_indices], train_Y[train_indices])
+#     lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
+    lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
     y_pred = lr.predict(train_X[test_indices])
     print(pearson_correlation(y_pred, train_Y[test_indices]))
 
@@ -107,7 +109,10 @@ lr = LinearRegression(learning_rate=0.01, num_iterations=3000)
 lr.fit(train_X, train_Y, watch=True)
 
 y_pred = lr.predict(test_X)
+
+sns.distplot(train_Y)
+
+sns.distplot(y_pred)
+
 sub = pd.DataFrame(y_pred)
 sub.to_csv('../results/'+'LinearRegression-0.01-3000-'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
-
-

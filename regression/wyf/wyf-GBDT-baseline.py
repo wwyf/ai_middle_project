@@ -40,17 +40,39 @@ from pyml.model_selection import ShuffleSplit
 from pyml.preprocessing import StandardScaler
 from pyml.logger import logger
 import logging
+import matplotlib.pyplot as plt
+import pickle
+import seaborn as sns
+
+def save_model(model, name):
+    with open(name,'wb') as f:
+        pickle.dump(model, f)
+def load_model(name):
+    with open(name,'rb') as f:
+        pickle.load(f,model)
+    return model
+
+fl = logging.FileHandler('wyf-GBDT-baseline.log',mode='a')
+formatter = logging.Formatter('[%(levelname)8s] - [%(module)10s] - [%(lineno)3d] - [%(funcName)10s] \n%(message)s\n')
+logger.addHandler(fl)
 
 # # 读取数据文件
 
 train = pd.read_excel('../data/train.xlsx')
 test = pd.read_excel('../data/testStudent.xlsx')
 
+# 增加里tags特征的属性
+train = pd.read_excel('../data/train_add_feat_score.xlsx')
+test = pd.read_excel('../data/test_add_feat_score.xlsx')
+
 train.dtypes # 检查有没有数据类型错误的，比如原本是int的变成str，说明里面可能有nan值等奇怪的数据
 
-train_ori_X = train.drop('Reviewer_Score', axis=1).drop('Tags', axis=1)
+# train_ori_X = train.drop('Reviewer_Score', axis=1).drop('Tags', axis=1)
+# train_ori_Y = train['Reviewer_Score']
+# test_ori_X = test.drop('Tags', axis=1)
+train_ori_X = train.drop('Reviewer_Score', axis=1)
 train_ori_Y = train['Reviewer_Score']
-test_ori_X = test.drop('Tags', axis=1)
+test_ori_X = test
 
 # # 特征工程
 
@@ -84,6 +106,10 @@ test_X_feat = get_proportion_feature_1(test_ori_X)
 
 train_X_feat.columns
 
+# 查看不同特征与分数的相关系数
+for feat_name in train_X_feat:
+    print("{} : {}".format(feat_name, pearson_correlation(train_X_feat[feat_name].values, train_ori_Y.values)))
+
 # 方案一：没有权重
 ss = StandardScaler()
 train_X = ss.fit_transform(train_X_feat.values)
@@ -95,7 +121,7 @@ train_X = ss.fit_transform(train_X_feat.values)
 test_X = ss.transform(test_X_feat.values)
 # 增加某些特征的权重
 train_X[:,1] *= 2
-train_X[:,4] *= 2
+train_X[:,2] *= 2
 train_X[:,4] *= 2
 
 train_Y = train_ori_Y.values
@@ -103,25 +129,51 @@ train_Y = train_ori_Y.values
 # # 交叉验证
 
 logger.setLevel(logging.INFO)
-logger.info('test')
 
-# n_splits = 2
-logger.setLevel(logging.INFO)
-cv = ShuffleSplit(n_splits=n_splits)
+n_splits = 2
+k_splits = 5
+# cv = ShuffleSplit(n_splits=n_splits)
+cv = KFold(k_splits=k_splits)
+score = 0
+models= []
 for train_indices, test_indices in cv.split(train_X):
-    lr = GradientBoostingRegression(learning_rate=0.2, n_estimators=50, max_tree_node_size=500)
-    lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
+    lr = GradientBoostingRegression(loss='lad', learning_rate=0.05, n_estimators=100, max_tree_node_size=50)
+#     lr.fit(train_X[train_indices], train_Y[train_indices], watch=True)
+    lr.fit_and_valid(train_X[train_indices], train_Y[train_indices],train_X[test_indices],train_Y[test_indices], mini_batch=4000 , watch=True)
     y_pred = lr.predict(train_X[test_indices])
-    logger.info(pearson_correlation(y_pred, train_Y[test_indices]))
+    this_score = pearson_correlation(y_pred, train_Y[test_indices])
+    score += this_score
+    logger.info(this_score)
+    models.append(lr)
+logger.info('score : {}'.format(score/k_splits))
+
+i = lr
+plt.plot(range(len(i.information['test_loss'])),i.information['test_loss'],label='test', )
+plt.legend()
+
+
+
+for i in models:
+    plt.plot(range(len(i.information['test_loss'])),i.information['test_loss'],label='test', )
+    plt.legend()
 
 # # 训练模型写入结果
 
 lr = GradientBoostingRegression(learning_rate=0.2, n_estimators=50, max_tree_node_size=500)
 lr.fit(train_X, train_Y, watch=True)
 
+
+
 y_pred = lr.predict(test_X)
-sub = pd.DataFrame(y_pred)
-sub.to_csv('./results/'+'GBDT-0.2-50-'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
+y_train_pred = lr.predict(train_X)
+
+sns.distplot(train_Y)
+
+sns.distplot(y_train_pred)
+
+sns.distplot(y_pred)
+
+pd.DataFrame(y_pred).to_csv('./results/'+'GBDT-0.05-820-'+ str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + ".csv", index=0, header=None, index_label=None)
 
 ## 一些记录
 训练5颗树的时候，验证集大概在0.625-0.640左右
@@ -137,5 +189,20 @@ sub.to_csv('./results/'+'GBDT-0.2-50-'+ str(datetime.datetime.now().strftime("%Y
 #         1. max_tree_node_size=500
 #     4. 验证集 0.63
 #     5. 测试集 53.9545
+#
+#
+
+# ## 2018.10.19
+# 0:GBDT-0.05-820-2018-10-19-13-54.csv
+#     1. GBDT
+#     2. 特征：无
+#     3. 超参数：
+#         1. learning_rate=0.05
+#         2. n_estimatros = 820
+#         3. max_tree_node = 500
+#         4. mini_batch=4000
+#         5. loss = 'huber'
+#     4. 验证集：0.645左右
+#     5. 测试集：TODO
 
 

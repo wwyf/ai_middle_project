@@ -208,7 +208,7 @@ sub.to_csv('./results/'+'CART-m1000-no_weight-add_tag_feat'+ str(datetime.dateti
 #         1. max_node_size = 500,没有设置连续值特征搜索上限
 #         2. 特征权重：无
 #     4. 验证集：
-#     5. 测试集：
+#     5. 测试集：63.4147
 # 1：CART-m1000-no_weight-add_tag_feat2018-10-18-23-56.csv
 #     1. CART二叉回归树
 #     2. 特征：增加tags提取出来的score特征
@@ -216,6 +216,6 @@ sub.to_csv('./results/'+'CART-m1000-no_weight-add_tag_feat'+ str(datetime.dateti
 #         1. max_node_size = 1000,没有设置连续值特征搜索上限
 #         2. 特征权重：无
 #     4. 验证集：0.626-0.641
-#     5. 测试集：
+#     5. 测试集：62.8266
 
 
